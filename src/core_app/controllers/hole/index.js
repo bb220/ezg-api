@@ -17,13 +17,13 @@ module.exports={
     },
     getHoleList:async(req,res,next)=>{
         try{
-            let { page = 1, limit = 10 ,search} = req.query
+            let { page = 1, limit = 10 , search, round} = req.query
             limit = Number(limit)
             page = Number(page)
             const offset = (page - 1) * limit;            
             let condition = { is_deleted:false}
 
-            const hole_list = await Hole.find(condition).sort({ createdAt: -1 }).populate("user","email").populate("round").limit(limit).skip(offset).select("-__v -is_deleted")
+            const hole_list = await Hole.find(condition).sort({ createdAt: -1 }).populate("user","email").populate({ path: 'round', match: {_id: round}}).limit(limit).skip(offset).select("-__v -is_deleted")
 
             const count_docs = await Hole.countDocuments(condition)
             let total_pages = Math.ceil(count_docs / limit)
