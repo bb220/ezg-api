@@ -21,7 +21,7 @@ module.exports={
     },
     getRoundList:async(req,res,next)=>{
         try{
-            let { page = 1, limit = 10 ,search} = req.query
+            let { page = 1, limit = 10 , search, user} = req.query
             limit = Number(limit)
             page = Number(page)
             const offset = (page - 1) * limit;            
@@ -31,7 +31,7 @@ module.exports={
                 condition = {...condition,$or:[ {name:{ $regex: search, $options: 'si' }}] } 
             }
 
-            const round_list = await Round.find(condition).sort({ createdAt: -1 }).populate("user","email").limit(limit).skip(offset).select("name played_date createdAt updatedAt")
+            const round_list = await Round.find(condition).sort({ createdAt: -1 }).populate({ path: 'user', select: 'email', match: {_id: user}}).limit(limit).skip(offset).select("name played_date createdAt updatedAt")
 
             const count_docs = await Round.countDocuments(condition)
             let total_pages = Math.ceil(count_docs / limit)
