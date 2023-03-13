@@ -9,7 +9,12 @@ module.exports={
 
             const new_round=new Round(req.body)
             await new_round.save()
-            response.successResponse(res,"round created",null)
+            let round_data = {
+                _id: new_round._id,
+                name: new_round.name
+            }
+
+            response.successResponse(res,"round created",round_data)
         }catch(e){
             next(e)
         }
