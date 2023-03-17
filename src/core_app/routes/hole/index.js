@@ -6,10 +6,10 @@ const schemas=require("../../helpers/schemas")
 const {verifyToken}=require("../../../middleware/auth")
 
 router
-    .post('/', validation(schemas.hole_schema), hole.createHole)
+    .post('/', validation(schemas.hole_schema),verifyToken, hole.createHole)
     .get('/', verifyToken, hole.getHoleList)
     .get('/:hole_id', verifyToken, hole.getSingleHole)
-    .put('/:hole_id', validation(schemas.hole_schema), hole.updateHole)
+    .put('/:hole_id', validation(schemas.hole_schema),verifyToken, hole.updateHole)
     .delete("/:hole_id",verifyToken,hole.deleteHole)
 
 module.exports = router

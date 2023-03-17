@@ -4,10 +4,7 @@ const response = require("../../../utils/response")
 module.exports={
     createRound:async(req,res,next)=>{
         try{
-            const user_data=await User.findOne({_id:req.body.user,is_deleted:false})
-            if(!user_data)return response.errorResponse(res,404,"user not found")
-
-            const new_round=new Round(req.body)
+            const new_round=new Round({...req.body,user:req.user._id})
             await new_round.save()
             let round_data = {
                 _id: new_round._id,
@@ -25,7 +22,7 @@ module.exports={
             limit = Number(limit)
             page = Number(page)
             const offset = (page - 1) * limit;            
-            let condition = { is_deleted:false}
+            let condition = {user:req.user._id, is_deleted:false}
 
             if(search){
                 condition = {...condition,$or:[ {name:{ $regex: search, $options: 'si' }}] } 
@@ -45,7 +42,7 @@ module.exports={
     getSingleRound:async(req,res,next)=>{
         try{
             const {round_id}=req.params
-            const round_data=await Round.findOne({_id:round_id,is_deleted:false}).populate("user","email").select("name played_date createdAt updatedAt")
+            const round_data=await Round.findOne({_id:round_id,user:req.user._id,is_deleted:false}).populate("user","email").select("name played_date createdAt updatedAt")
             if(!round_data) return response.errorResponse(res,404,"round not found")
 
             response.successResponse(res,null,round_data)
@@ -57,18 +54,15 @@ module.exports={
     updateRound:async(req,res,next)=>{
         try{
             const {round_id}=req.params
-            const round_data=await Round.findOne({_id:round_id,is_deleted:false})
+            const round_data=await Round.findOne({_id:round_id,is_deleted:false,user:req.user._id})
             if(!round_data) return response.errorResponse(res,404,"round not found")
-
-            const user_data=await User.findOne({_id:req.body.user,is_deleted:false})
-            if(!user_data)return response.errorResponse(res,404,"user not found")
 
             const updates=Object.keys(req.body)
             updates.forEach((obj)=>{
                 round_data[obj]=req.body[obj]
             })
             await round_data.save()
-            response.successResponse(res,"round updated",null)
+            response.successResponse(res,"round updated",round_data)
         }catch(e){
             next(e)
         }
@@ -76,7 +70,7 @@ module.exports={
     deleteRound:async(req,res,next)=>{
         try{
             const {round_id}=req.params
-            const round_data=await Round.findOne({_id:round_id,is_deleted:false})
+            const round_data=await Round.findOne({_id:round_id,is_deleted:false,user:req.user._id})
             if(!round_data) return response.errorResponse(res,404,"round not found")
 
             round_data.is_deleted=true

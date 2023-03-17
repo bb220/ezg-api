@@ -8,7 +8,6 @@ const schemas = {
         password: Joi.string().required()
     }),
     round_schema: Joi.object().keys({
-        user: Joi.objectId().required(),
         name: Joi.string().optional(),
         played_date: Joi.string().optional()
     }),
