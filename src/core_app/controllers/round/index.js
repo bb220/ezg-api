@@ -1,4 +1,4 @@
-const {Round,User}=require("../../../database/models")
+const {Round,User, Hole}=require("../../../database/models")
 const response = require("../../../utils/response")
 
 module.exports={
@@ -34,7 +34,7 @@ module.exports={
             let total_pages = Math.ceil(count_docs / limit)
             total_pages = total_pages === 0 ? 1 : total_pages
 
-            return response.successResponse(res, null, round_list, page, total_pages)
+            return res.send({ status : true, code :200, message:null, current_page:page, total_pages,total_rounds:count_docs, data:round_list })
         }catch(e){
             next(e)
         }
@@ -75,6 +75,9 @@ module.exports={
 
             round_data.is_deleted=true
             await round_data.save()
+
+            await Hole.updateMany({round:round_id},{is_deleted:true})
+
             response.successResponse(res,"round deleted",null)
          }catch(e){
             next(e)

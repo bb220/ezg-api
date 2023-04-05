@@ -38,7 +38,7 @@ module.exports = {
 
             const valid_pass = await user.passowrdCheck(password)
             if (!valid_pass) {
-                return res.send({ status: false, code: 400, message: "invalid password" });
+                return res.status(400).send({ status: false, code: 400, message: "invalid password" });
             }
 
             user.last_login = new Date()

@@ -67,6 +67,36 @@ module.exports={
             next(e)
         }
     },
+    bulkUpdate:async(req,res,next)=>{
+        try{
+            const {round,holes}=req.body
+            if(!round)return response.errorResponse(res,400,"round is required in request body")
+            if(!holes || holes.length===0)return response.errorResponse(res,400,"holes array is required in request body")
+        
+            const round_data=await Round.findOne({_id:round,is_deleted:false,user:req.user._id})
+            if(!round_data)return response.errorResponse(res,404,"round not found")
+
+            let output=[]
+            for(const hole of holes){
+                try{
+                    const hole_data=await Hole.findOne({number:hole.number,is_deleted:false,round:round})
+                    if(hole_data){
+                        const updates=Object.keys(hole)
+                        updates.forEach((obj)=>{
+                            hole_data[obj]=hole[obj]
+                        })
+                        await hole_data.save()
+                        output.push(hole_data)
+                    }
+                }catch(e){}
+            }
+
+            response.successResponse(res,"holelist updated",output)
+        }catch(e){
+            next(e)
+        }
+    },
+    
     deleteHole:async(req,res,next)=>{
         try{
             const {hole_id}=req.params
