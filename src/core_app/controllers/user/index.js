@@ -58,9 +58,10 @@ module.exports = {
             } else {
                 refresh_token = jwt.sign({ _id: user._id, email: user.email,device:device_name }, process.env.JWT_SECRET, { expiresIn: "10d" });
             }
-
+            const expirationTime = Date.now() + (24  * 60 * 60 * 1000);
+     
             let user_data = {
-                _id: user._id, access_token,refresh_token, email: user.email
+                _id: user._id, access_token,refresh_token,token_expire_at:expirationTime, email: user.email
             }
 
 
@@ -93,9 +94,9 @@ module.exports = {
                 new_refresh_token = jwt.sign({ _id: user._id, email: user.email,device:decoded.device_name }, process.env.JWT_SECRET, { expiresIn: "10d" });
             }
         
-
+            const expirationTime = Date.now() + (24  * 60 * 60 * 1000);
             let user_data = {
-                _id: user._id, access_token,refresh_token:new_refresh_token, email: user.email
+                _id: user._id, access_token,refresh_token:new_refresh_token,token_expire_at:expirationTime, email: user.email
             }   
             response.successResponse(res, null, user_data)
         } catch (e) {
