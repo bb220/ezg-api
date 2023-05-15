@@ -5,7 +5,11 @@ const schemas = {
 
     user_account: Joi.object().keys({
         email: Joi.string().required(),
-        password: Joi.string().required()
+        password: Joi.string().required(),
+        device_name: Joi.string().optional().allow("")
+    }),
+    access_token: Joi.object().keys({
+        refresh_token: Joi.string().required()
     }),
     round_schema: Joi.object().keys({
         name: Joi.string().optional(),

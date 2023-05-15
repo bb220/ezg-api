@@ -4,10 +4,6 @@ const response = require("../utils/response")
 
 module.exports = {
 
-    generateNewToken: (user) => {
-        const auth_token = jwt.sign({ _id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: "10d" });
-        return auth_token
-    },
 
     verifyToken: async (req, res, next) => {
 

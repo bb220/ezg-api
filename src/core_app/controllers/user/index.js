@@ -1,6 +1,6 @@
 const response = require("../../../utils/response")
 const { User } = require("../../../database/models")
-const authMiddleware = require("../../../middleware/auth")
+const jwt = require('jsonwebtoken');
 
 module.exports = {
     createAccount: async (req, res, next) => {
@@ -30,12 +30,18 @@ module.exports = {
 
     loginWithEmail: async (req, res, next) => {
         try {
-            const { email, password } = req.body
+            let { email, password,device_name } = req.body
             const user = await User.findOne({ email ,is_deleted:false})
             if (!user) {
                 return response.errorResponse(res, 404, "User not found")
             }
 
+            const userAgent = req.headers['user-agent'];
+         
+            if(!device_name){
+                device_name=userAgent
+            }
+            
             const valid_pass = await user.passowrdCheck(password)
             if (!valid_pass) {
                 return res.status(400).send({ status: false, code: 400, message: "invalid password" });
@@ -43,13 +49,54 @@ module.exports = {
 
             user.last_login = new Date()
             await user.save()
-            const token = authMiddleware.generateNewToken(user)
+
+            const access_token  = jwt.sign({ _id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: "1d" });
+            
+            let refresh_token;
+            if (/mobile/i.test(userAgent)) { ///for mobile refresh token
+                refresh_token = jwt.sign({ _id: user._id, email: user.email,device:device_name }, process.env.JWT_SECRET, { expiresIn: null });
+            } else {
+                refresh_token = jwt.sign({ _id: user._id, email: user.email,device:device_name }, process.env.JWT_SECRET, { expiresIn: "10d" });
+            }
 
             let user_data = {
-                _id: user._id, token: token, email: user.email
+                _id: user._id, access_token,refresh_token, email: user.email
             }
 
 
+            response.successResponse(res, null, user_data)
+        } catch (e) {
+            next(e)
+        }
+    },
+    getAccessToken: async (req, res, next) => {
+        try {
+            let { refresh_token } = req.body
+
+            const decoded = jwt.verify(refresh_token,  process.env.JWT_SECRET);
+
+            const user = await User.findOne({ _id: decoded._id, is_deleted: false})
+            if (!user) {
+                return response.errorResponse(res, 404, "User not found")
+            }
+            user.last_login = new Date()
+            await user.save()
+
+            const userAgent = req.headers['user-agent'];
+
+            const access_token  = jwt.sign({ _id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: "1d" });
+            
+            let new_refresh_token;
+            if (/mobile/i.test(userAgent)) { ///for mobile refresh token
+                new_refresh_token = jwt.sign({ _id: user._id, email: user.email,device:decoded.device_name }, process.env.JWT_SECRET, { expiresIn: null });
+            } else {
+                new_refresh_token = jwt.sign({ _id: user._id, email: user.email,device:decoded.device_name }, process.env.JWT_SECRET, { expiresIn: "10d" });
+            }
+        
+
+            let user_data = {
+                _id: user._id, access_token,refresh_token:new_refresh_token, email: user.email
+            }   
             response.successResponse(res, null, user_data)
         } catch (e) {
             next(e)
