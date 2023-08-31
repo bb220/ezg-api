@@ -1,17 +1,20 @@
-const {Round,User, Hole}=require("../../../database/models")
+const {Round,User, Hole, Course}=require("../../../database/models")
 const response = require("../../../utils/response")
 
 module.exports={
     createRound:async(req,res,next)=>{
         try{
-            const new_round=new Round({...req.body,user:req.user._id})
-            await new_round.save()
-            let round_data = {
-                _id: new_round._id,
-                name: new_round.name
+            const {course}=req.body
+            if(course){
+                const course_data=await Course.findOne({_id:course,is_deleted:false,user:req.user._id})
+                if(!course_data) return response.errorResponse(res,404,"course not found")
             }
 
-            response.successResponse(res,"round created",round_data)
+            const new_round=new Round({...req.body,user:req.user._id})
+            await new_round.save()
+
+
+            response.successResponse(res,"round created",new_round)
         }catch(e){
             next(e)
         }
@@ -28,7 +31,7 @@ module.exports={
                 condition = {...condition,$or:[ {name:{ $regex: search, $options: 'si' }}] } 
             }
 
-            const round_list = await Round.find(condition).sort({ createdAt: -1 }).populate("user","email").limit(limit).skip(offset).select("name played_date createdAt updatedAt")
+            const round_list = await Round.find(condition).sort({ createdAt: -1 }).populate("user","email").limit(limit).skip(offset).select("name course played_date createdAt updatedAt")
 
             const count_docs = await Round.countDocuments(condition)
             let total_pages = Math.ceil(count_docs / limit)
@@ -42,7 +45,7 @@ module.exports={
     getSingleRound:async(req,res,next)=>{
         try{
             const {round_id}=req.params
-            const round_data=await Round.findOne({_id:round_id,user:req.user._id,is_deleted:false}).populate("user","email").select("name played_date createdAt updatedAt")
+            const round_data=await Round.findOne({_id:round_id,user:req.user._id,is_deleted:false}).populate("user","email").select("name course played_date createdAt updatedAt")
             if(!round_data) return response.errorResponse(res,404,"round not found")
 
             response.successResponse(res,null,round_data)
@@ -54,6 +57,13 @@ module.exports={
     updateRound:async(req,res,next)=>{
         try{
             const {round_id}=req.params
+            const {course}=req.body
+
+            if(course){
+                const course_data=await Course.findOne({_id:course,is_deleted:false,user:req.user._id})
+                if(!course_data) return response.errorResponse(res,404,"course not found")
+            }
+
             const round_data=await Round.findOne({_id:round_id,is_deleted:false,user:req.user._id})
             if(!round_data) return response.errorResponse(res,404,"round not found")
 

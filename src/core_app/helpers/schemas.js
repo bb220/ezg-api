@@ -13,6 +13,7 @@ const schemas = {
     }),
     round_schema: Joi.object().keys({
         name: Joi.string().optional(),
+        course:Joi.objectId().optional().allow(""),
         played_date: Joi.string().optional()
     }),
 
@@ -23,8 +24,14 @@ const schemas = {
         score: Joi.number().required(),
         putts: Joi.number().optional()
     }),
-
-
+    course_schema: Joi.object().keys({
+        name: Joi.string().optional()
+    }),
+    course_hole_schema: Joi.object().keys({
+        course: Joi.objectId().required(),
+        number: Joi.number().required(),
+        par: Joi.number().optional()
+    }),
 
 };
 module.exports = schemas;
