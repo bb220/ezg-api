@@ -6,7 +6,7 @@ const schemas=require("../../helpers/schemas")
 const {verifyToken}=require("../../../middleware/auth")
 
 router
-    .post('/', validation(schemas.course_schema),verifyToken, course.createCourse)
+    .post('/', validation(schemas.course_schema_create),verifyToken, course.createCourse)
     .get('/', verifyToken, course.getCourseList)
     .get('/:course_id', verifyToken, course.getSingleCourse)
     .put('/:course_id', validation(schemas.course_schema),verifyToken, course.updateCourse)

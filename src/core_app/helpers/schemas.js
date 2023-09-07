@@ -27,6 +27,13 @@ const schemas = {
     course_schema: Joi.object().keys({
         name: Joi.string().optional()
     }),
+    course_schema_create: Joi.object().keys({
+        name: Joi.string().optional(),
+        holes:Joi.array().items({
+            number: Joi.number().required(),
+            par: Joi.number().empty()
+        }).optional()
+    }),
     course_hole_schema: Joi.object().keys({
         course: Joi.objectId().required(),
         number: Joi.number().required(),

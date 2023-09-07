@@ -4,6 +4,8 @@ const response = require("../../../utils/response")
 module.exports={
     createCourse:async(req,res,next)=>{
         try{
+            const {holes}=req.body
+            let holes_data=[]
             const new_course=new Course({...req.body,user:req.user._id})
             await new_course.save()
             let course_data = {
@@ -11,7 +13,18 @@ module.exports={
                 name: new_course.name
             }
 
-            response.successResponse(res,"course created",course_data)
+            if(holes?.length>0){
+                let hole_list=holes.map((hole)=>{
+                    return {
+                        ...hole,
+                        "course":new_course._id,
+                        user:req.user._id
+                    }
+                })
+                holes_data=await CourseHole.create(hole_list)
+            }
+
+            response.successResponse(res,"course created",{...course_data,holes_data})
         }catch(e){
             next(e)
         }
