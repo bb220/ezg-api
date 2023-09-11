@@ -67,6 +67,10 @@ module.exports={
                         })
                         await hole_data.save()
                         output.push(hole_data)
+                    }else{
+                        const new_course_hole=new CourseHole({ course:course,number:hole.number,par:hole.par,user:req.user._id})
+                        await new_course_hole.save()
+                        output.push(new_course_hole)
                     }
                 }catch(e){}
             }
