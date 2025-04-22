@@ -7,7 +7,7 @@
 
 Welcome to the EZG API repository! 🚀
 
-This project represents an Express.js API server built for managing data and services for [My Easy Golf Scorecard](https://myeasygolfscorecard.com/) (formerly EZG).
+An Express.js API server built for managing data and services for [My Easy Golf Scorecard](https://myeasygolfscorecard.com/) (formerly EZG).
 
 ---
 
